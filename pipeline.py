@@ -83,6 +83,12 @@ def data_quality_check(df: pd.DataFrame):
 
     return out, bad
 
+# Columns that will be preserved from the dataset
+COLUMNS = [
+    "url", "address", "name", "rate", 
+    "votes", "phone", "location", "rest_type", 
+    "dish_liked", "cuisines", "reviews_list"
+]
 
 # Dictionary to hold record of excluded rows
 BAD_SUMMARY = {}
