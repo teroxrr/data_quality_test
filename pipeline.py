@@ -30,6 +30,44 @@ def remove_bad_rows(df: pd.DataFrame):
     
     return updated_df, bad
 
+def remove_junk_chars(string_data: str):
+    """Remove junk characters"""
+
+    clean = string_data.replace("\\n", "")
+    clean = re.sub(r"[^a-zA-Z0-9/.]+", ' ', clean)
+    return clean
+
+
+def numeric_phone(phone: str):
+    """Remove non numeric characters from phone number"""
+
+    if type(phone) == str:
+        numeric = ''.join(e for e in phone if e.isnumeric())
+        return numeric
+
+
+def clean_phone(df: pd.DataFrame):
+    """Split phone column into two columns. Clean phone numbers. Cast columns to integer"""
+
+    # Split "phone" column by line break ("\n")
+    split_phone = df["phone"].str.split("\n", n=1, expand=True)
+    # Create new columns
+    df["phone_1"] = split_phone[0]
+    df["phone_2"] = split_phone[1]
+    # Drop original phone column
+    df.drop(columns=["phone"], inplace=True)
+
+    # Clean phone columns
+    df["phone_1"] = df["phone_1"].apply(numeric_phone)
+    df["phone_2"] = df["phone_2"].apply(numeric_phone)
+
+    # Cast phone columns to integer
+    df["phone_1"] = pd.to_numeric(df["phone_1"], errors='coerce').astype('Int64')
+    df["phone_2"] = pd.to_numeric(df["phone_2"], errors='coerce').astype('Int64')
+
+    return df
+
+
 
 # Dictionary to hold record of excluded rows
 BAD_SUMMARY = {}
