@@ -1,6 +1,6 @@
 # Data Quality Test
 
-This respository presents an example of an application for performing some data analysis and data cleaning.
+This respository presents an example of a pipeline application for performing some data analysis and data cleaning.
 It's desigend to receive files on a daily basis and pass them through 3 modules.
 
 ## Processing Modules 
@@ -13,3 +13,34 @@ It's desigend to receive files on a daily basis and pass them through 3 modules.
     * .bad -> Containing the bad data 
     * .json -> Containing metadata related to the .bad file
 
+### Dependencies
+- pandas
+
+## Running the pipeline
+
+The files to be processed are expected to be inside de folder `input`. 
+
+To start the pipeline simply run the following command adding the name of the file to process:
+    
+    /data_quality_test> $ python pipeline.py <file_to_process>
+
+Once the pipeline runs successfully, the processed files will be saved into the folder `output`
+
+## Examples of runs
+
+### - Successful run
+        /data_quality_test> python pipeline.py data_file_20210528182844.csv
+        Processing file data_file_20210528182844.csv ...
+        Saving files...
+        Saved file data_file_20210528182844.out
+        Saved file data_file_20210528182844.bad
+        Saved file data_file_20210528182844_bad_metadata.json
+        PROCESS COMPLETED SUCCESSFULLY!
+
+### - File was already processed 
+        /data_quality_test> python pipeline.py data_file_20210527182730.csv 
+        WARNING:root:The file was already processed. Aborting processing.
+
+### - Wrong file extension
+        /data_quality_test> python pipeline.py data_file_20210527182730.txt
+        WARNING:root:The file extension should be ".csv". Aborting processing.
