@@ -1,3 +1,4 @@
+import re
 import pandas as pd
 
 def find_null(df: pd.DataFrame, columns: list):
@@ -67,6 +68,20 @@ def clean_phone(df: pd.DataFrame):
 
     return df
 
+def data_quality_check(df: pd.DataFrame):
+    """This module executes the following tasks:
+        - Find and remove rows that have null values in essential columns
+        - Remove junk characters from specific columns
+        - Process phone column, splitting it into two new columns. Cast it as integer.
+    """
+
+    find_null(df, ["name", "phone", "location"])
+    df, bad = remove_bad_rows(df)
+    df["address"] = df["address"].apply(remove_junk_chars)
+    df["reviews_list"] = df["reviews_list"].apply(remove_junk_chars)
+    out = clean_phone(df)
+
+    return out, bad
 
 
 # Dictionary to hold record of excluded rows
