@@ -1,6 +1,9 @@
+import logging
 import json
-import re
+import os
 import pandas as pd
+import re
+
 
 def find_null(df: pd.DataFrame, columns: list):
     """Find row numbers in the dataframe "df", corresponding to null values contained in the columns passed 
@@ -103,6 +106,28 @@ def output_files(out_df, bad_df):
         json.dump(BAD_SUMMARY, outfile)
     print(f"Saved file {FILE_NAME}_bad_metadata.json")
 
+def file_check():
+    """Checks for the following errors related to the input file:
+        - Wrong extension (it must be .csv)
+        - The file is empty
+        - The file was already processed
+    """
+    # Check extension
+    if extension != "csv":
+        logging.warning('The file extension should be ".csv". Aborting processing.')
+        return 1
+
+    # Check if file is empty
+    if os.stat(f"input/{file}").st_size == 0:
+        logging.warning("The file is empty. Aborting processing.")
+        return 1
+
+    # Check if file was already processed
+    if os.path.exists(f"output/{FILE_NAME}.out"):
+        logging.warning("The file was already processed. Aborting processing.")
+        return 1
+    
+    return 0
 
 # Columns that will be preserved from the dataset
 COLUMNS = [
@@ -118,3 +143,19 @@ BAD_SUMMARY = {}
 file = "data_file_20210527182730.csv"
 extension = file.split(".")[-1]
 FILE_NAME = file.split(".")[0]
+
+# Run file_check module
+if file_check() == 0:
+
+    # Read file
+    print(f"Processing file {file} ...")
+    raw = pd.read_csv(f"input/{file}", header=0, usecols=COLUMNS)
+
+    # Run data_quality_check module
+    out, bad = data_quality_check(raw)
+
+    # Run output_files module
+    print("Saving files...")
+    output_files(out, bad)    
+
+    print("PROCESS COMPLETED SUCCESFULLY!")
