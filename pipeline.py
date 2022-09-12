@@ -3,6 +3,7 @@ import json
 import os
 import pandas as pd
 import re
+import sys
 
 
 def find_null(df: pd.DataFrame, columns: list):
@@ -17,6 +18,7 @@ def find_null(df: pd.DataFrame, columns: list):
         # Store row numbers
         if len(null_rows) > 0:
             BAD_SUMMARY[f"null_{column}"] = null_rows
+
 
 def remove_bad_rows(df: pd.DataFrame):
     """Remove from the dataset the rows contained in the "BAD_SUMMARY" dictionary"""
@@ -34,6 +36,8 @@ def remove_bad_rows(df: pd.DataFrame):
     updated_df = df.drop(rows_to_exclude)
     
     return updated_df, bad
+
+
 
 def remove_junk_chars(string_data: str):
     """Remove junk characters"""
@@ -72,39 +76,6 @@ def clean_phone(df: pd.DataFrame):
 
     return df
 
-def data_quality_check(df: pd.DataFrame):
-    """This module executes the following tasks:
-        - Find and remove rows that have null values in essential columns
-        - Remove junk characters from specific columns
-        - Process phone column, splitting it into two new columns. Cast it as integer.
-    """
-
-    find_null(df, ["name", "phone", "location"])
-    df, bad = remove_bad_rows(df)
-    df["address"] = df["address"].apply(remove_junk_chars)
-    df["reviews_list"] = df["reviews_list"].apply(remove_junk_chars)
-    out = clean_phone(df)
-
-    return out, bad
-
-def output_files(out_df, bad_df):
-    """Write to files the output of the process:
-        - FILE_NAME.out -> All clean records
-        - FILE_NAME.bad -> All bad records
-        - FILE_NAME_bad_metadata.json -> Metadata corresponding to the .bad file
-    """
-    # Write FILE_NAME.out file
-    out_df.to_csv(F"output/{FILE_NAME}.out")
-    print(f"Saved file {FILE_NAME}.out")
-
-    # Write FILE_NAME.bad file
-    bad_df.to_csv(F"output/{FILE_NAME}.bad")
-    print(f"Saved file {FILE_NAME}.bad")
-
-    # Write FILE_NAME_bad_metadata.json file
-    with open(F"output/{FILE_NAME}_bad_metadata.json", "w") as outfile:
-        json.dump(BAD_SUMMARY, outfile)
-    print(f"Saved file {FILE_NAME}_bad_metadata.json")
 
 def file_check():
     """Checks for the following errors related to the input file:
@@ -129,6 +100,43 @@ def file_check():
     
     return 0
 
+def data_quality_check(df: pd.DataFrame):
+    """This module executes the following tasks:
+        - Find and remove rows that have null values in essential columns
+        - Remove junk characters from specific columns
+        - Process phone column, splitting it into two new columns. Cast it as integer.
+    """
+
+    find_null(df, ["name", "phone", "location"])
+    df, bad = remove_bad_rows(df)
+    df["address"] = df["address"].apply(remove_junk_chars)
+    df["reviews_list"] = df["reviews_list"].apply(remove_junk_chars)
+    out = clean_phone(df)
+
+    return out, bad
+
+
+def output_files(out_df, bad_df):
+    """Write to files the output of the process:
+        - FILE_NAME.out -> All clean records
+        - FILE_NAME.bad -> All bad records
+        - FILE_NAME_bad_metadata.json -> Metadata corresponding to the .bad file
+    """
+    # Write FILE_NAME.out file
+    out_df.to_csv(F"output/{FILE_NAME}.out")
+    print(f"Saved file {FILE_NAME}.out")
+
+    # Write FILE_NAME.bad file
+    bad_df.to_csv(F"output/{FILE_NAME}.bad")
+    print(f"Saved file {FILE_NAME}.bad")
+
+    # Write FILE_NAME_bad_metadata.json file
+    with open(F"output/{FILE_NAME}_bad_metadata.json", "w") as outfile:
+        json.dump(BAD_SUMMARY, outfile)
+    print(f"Saved file {FILE_NAME}_bad_metadata.json")
+    
+
+
 # Columns that will be preserved from the dataset
 COLUMNS = [
     "url", "address", "name", "rate", 
@@ -140,22 +148,25 @@ COLUMNS = [
 BAD_SUMMARY = {}
 
 # File naming
-file = "data_file_20210527182730.csv"
+file = sys.argv[1]
 extension = file.split(".")[-1]
 FILE_NAME = file.split(".")[0]
 
-# Run file_check module
-if file_check() == 0:
 
-    # Read file
-    print(f"Processing file {file} ...")
-    raw = pd.read_csv(f"input/{file}", header=0, usecols=COLUMNS)
+if __name__ == '__main__':
 
-    # Run data_quality_check module
-    out, bad = data_quality_check(raw)
+    # Run file_check module
+    if file_check() == 0:
 
-    # Run output_files module
-    print("Saving files...")
-    output_files(out, bad)    
+        # Read file
+        print(f"Processing file {file} ...")
+        raw = pd.read_csv(f"input/{file}", header=0, usecols=COLUMNS)
 
-    print("PROCESS COMPLETED SUCCESFULLY!")
+        # Run data_quality_check module
+        out, bad = data_quality_check(raw)
+
+        # Run output_files module
+        print("Saving files...")
+        output_files(out, bad)    
+
+        print("PROCESS COMPLETED SUCCESFULLY!")
