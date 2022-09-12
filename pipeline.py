@@ -1,3 +1,4 @@
+import json
 import re
 import pandas as pd
 
@@ -83,6 +84,26 @@ def data_quality_check(df: pd.DataFrame):
 
     return out, bad
 
+def output_files(out_df, bad_df):
+    """Write to files the output of the process:
+        - FILE_NAME.out -> All clean records
+        - FILE_NAME.bad -> All bad records
+        - FILE_NAME_bad_metadata.json -> Metadata corresponding to the .bad file
+    """
+    # Write FILE_NAME.out file
+    out_df.to_csv(F"output/{FILE_NAME}.out")
+    print(f"Saved file {FILE_NAME}.out")
+
+    # Write FILE_NAME.bad file
+    bad_df.to_csv(F"output/{FILE_NAME}.bad")
+    print(f"Saved file {FILE_NAME}.bad")
+
+    # Write FILE_NAME_bad_metadata.json file
+    with open(F"output/{FILE_NAME}_bad_metadata.json", "w") as outfile:
+        json.dump(BAD_SUMMARY, outfile)
+    print(f"Saved file {FILE_NAME}_bad_metadata.json")
+
+
 # Columns that will be preserved from the dataset
 COLUMNS = [
     "url", "address", "name", "rate", 
@@ -92,3 +113,8 @@ COLUMNS = [
 
 # Dictionary to hold record of excluded rows
 BAD_SUMMARY = {}
+
+# File naming
+file = "data_file_20210527182730.csv"
+extension = file.split(".")[-1]
+FILE_NAME = file.split(".")[0]
