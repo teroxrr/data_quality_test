@@ -169,4 +169,4 @@ if __name__ == '__main__':
         print("Saving files...")
         output_files(out, bad)    
 
-        print("PROCESS COMPLETED SUCCESFULLY!")
+        print("PROCESS COMPLETED SUCCESSFULLY!")
