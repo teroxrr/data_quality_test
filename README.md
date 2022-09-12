@@ -13,8 +13,6 @@ It's desigend to receive files on a daily basis and pass them through 3 modules.
     * .bad -> Containing the bad data 
     * .json -> Containing metadata related to the .bad file
 
-### Dependencies
-- pandas
 
 ## Running the pipeline
 
@@ -44,3 +42,6 @@ Once the pipeline runs successfully, the processed files will be saved into the 
 ### - Wrong file extension
         /data_quality_test> $ python pipeline.py data_file_20210527182730.txt
         WARNING:root:The file extension should be ".csv". Aborting processing.
+
+## Dependencies/Libraries
+- pandas
